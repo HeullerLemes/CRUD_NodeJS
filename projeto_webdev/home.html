@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    </head>
+    <body>
+        <div>
+            <form id="formCadastroAlbum">
+                <div>
+                    <center>
+                    <input id="button" type="submit" value="Gravar"/>
+                    <label class="title">Ano</label>
+                    <input type="text" id="ano" name="ano">
+                    <label class="title">Artista</label>
+                    <input type="text" id ="artista" name="artista">
+                    <label class="title">Nome</label>
+                    <input type="text" id="nome" name="nome" >
+                    </center>
+                </div>
+            </form>
+        </div>
+        <div class="container">
+            <h2>Lista de Albuns</h2>
+            <table class="table table-striped" >
+                <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nome</th>
+                    <th>Artista</th>
+                    <th>Ano</th>
+                </tr>
+                </thead>
+                <tbody id='albunsLista'>
+                </tbody>
+            </table>
+        </div>        
+    </body>
+</html>
+
+<script>
+var dataFromServer
+$(document).ready(listar);
+function listar() {
+    $.get("/listarAlbuns", function(data, status){
+        $('#albunsLista').empty();
+        dataFromServer = data;
+        $.each( data, function( key, album ) {
+            $('#albunsLista').append(
+                '<tr>'
+                + '<td>' + JSON.stringify(dataFromServer[key].ALBUM_ID) + '</td>'
+                + '<td>' + '<input id=nome'+key+' type="text" value='+JSON.stringify(dataFromServer[key].NOME).replace('"',"").replace('"',"")+'>'  + '</td>'
+                + '<td>' + '<input id=artista'+key+' type="text" value='+JSON.stringify(dataFromServer[key].ARTISTA).replace('"',"").replace('"',"")+'>'  +'</td>' 
+                + '<td>' + '<input id=ano'+key+' type="text" value='+JSON.stringify(dataFromServer[key].ANO)+'>'  + '</td>'
+                + '<td>' + '<button id=' + JSON.stringify(dataFromServer[key].ALBUM_ID) + ' onclick="excluir('+JSON.stringify(data[key].ALBUM_ID)+')"> Excluir </button>'  + '</td>'
+                + '<td>' + '<button id=' + JSON.stringify(dataFromServer[key].ALBUM_ID) +  ' onclick="alterar('+key+')"> Alterar </button>'+'</td>'
+                + '</tr>'
+            );
+        });
+    });
+}
+function excluir(id) {
+    $.post( "/excluirAlbum", { Id: id}).done(function( data, status ){}); 
+    listar();
+}
+function alterar(key) {
+    $.post( "/alterarAlbum", { Id: JSON.stringify(dataFromServer[key].ALBUM_ID), Nome: $('#nome'+key).val(), Artista: $('#artista'+key).val(), Ano: $('#ano'+key).val()}).done(function( data, status ){});
+    listar();
+}
+$("#button").click( function(){
+    $.post( "/inserirAlbum", { Nome: $('#nome').val(), Artista: $('#artista').val() , Ano : $('#ano').val()}).done(function( data, status )
+    {
+        alert( "Data Loaded: " + data );  
+    });
+});
+</script>
